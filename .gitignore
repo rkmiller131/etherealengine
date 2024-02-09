@@ -158,6 +158,7 @@ packages/server/upload_test/
 /packages/client/public/workbox-*
 /packages/client/public/projects/*
 /packages/projects/projects/*
+!/packages/projects/projects/uvx-bubble-pop
 
 # Visual Studio Code settings
 project-package-jsons/*
