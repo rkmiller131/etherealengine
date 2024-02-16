@@ -35,7 +35,7 @@ import {
   useOptionalComponent
 } from '@etherealengine/ecs'
 import { getState, useHookstate } from '@etherealengine/hyperflux'
-import React, { useEffect } from 'react'
+import React, { useLayoutEffect } from 'react'
 import { Vector3 } from 'three'
 import { traverseEntityNodeParent } from '../../transform/components/EntityTree'
 import { Physics } from '../classes/Physics'
@@ -88,6 +88,13 @@ export const ColliderComponent = defineComponent({
     }
   },
 
+  onRemove(entity, component) {
+    if (component.collider.value) {
+      const physicsWorld = getState(PhysicsState).physicsWorld
+      physicsWorld.removeCollider(component.collider.value, false)
+    }
+  },
+
   reactor: ColliderComponentReactor
 })
 
@@ -106,7 +113,7 @@ function ColliderComponentReactor() {
   const rigidbodyEntity = useHookstate(UndefinedEntity)
 
   /** @todo we may need to use a useHierarchyComponent sort of thing here */
-  useEffect(() => {
+  useLayoutEffect(() => {
     let parentRigidbodyEntity = UndefinedEntity
     if (hasComponent(entity, RigidBodyComponent)) {
       parentRigidbodyEntity = entity
@@ -133,7 +140,7 @@ function ColliderComponentRigidbodyReactor(props: { entity: Entity; rigidbodyEnt
   const isTrigger = !!useOptionalComponent(props.entity, TriggerComponent)
   const colliderComponent = useComponent(props.entity, ColliderComponent)
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!rigidbodyComponent.body.value) return
 
     const colliderDesc = Physics.createColliderDesc(
@@ -149,11 +156,11 @@ function ColliderComponentRigidbodyReactor(props: { entity: Entity; rigidbodyEnt
 
     return () => {
       colliderComponent.collider.set(null)
-      physicsWorld.removeCollider(colliderDesc, false)
+      physicsWorld.removeCollider(collider, false)
     }
   }, [rigidbodyComponent.body])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!colliderComponent.collider.value) return
 
     const collider = colliderComponent.collider.value
